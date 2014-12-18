@@ -16,6 +16,18 @@ int distance(){
   return cm;
 }
 
+void motorControl(int input1,int input2,int enable,int speed){
+  if (speed>0) {
+    digitalWrite(input1,HIGH);
+    digitalWrite(input2, LOW);
+  }
+  else {
+    digitalWrite(input1, LOW);
+    digitalWrite(input2, HIGH);
+  }
+  analogWrite(enable, abs(speed));
+}
+
 void showIRreadings(){
   lcd.clear();
   lcd.setCursor(0,0);
