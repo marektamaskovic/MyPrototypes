@@ -72,7 +72,8 @@ void calibration(){
 
 }
 
-void showIRreadings(){
+void showReadings(){
+	//IR readings
 	lcd.clear();
 	lcd.setCursor(0,0);
 	lcd.print(analogRead(A3));
@@ -82,6 +83,14 @@ void showIRreadings(){
 	lcd.print(analogRead(A1));
 	lcd.setCursor(0,3);
 	lcd.print(analogRead(A0));
+
+	//servo and SRF05 sensor readings
+	lcd.setCursor(6,0);
+	lcd.print("cm: ");
+	lcd.print(distance());
+	lcd.setCursor(5,1);
+	lcd.print("servo: ");
+	lcd.print(head.read());
 }
 
 void setup(){
@@ -102,12 +111,6 @@ void setup(){
 }
 
 void loop(){
-	showIRreadings();
-	lcd.setCursor(6,0);
-	lcd.print("cm: ");
-	lcd.print(distance());
-	lcd.setCursor(5,1);
-	lcd.print("servo: ");
-	lcd.print(head.read());
+	showReadings();
 	delay(100);
 }
