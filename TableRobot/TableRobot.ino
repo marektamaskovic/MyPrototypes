@@ -75,13 +75,13 @@ void calibration(){
 void showIRreadings(){
 	lcd.clear();
 	lcd.setCursor(0,0);
-	lcd.print(analogRead(A0));
-	lcd.setCursor(0,1);
-	lcd.print(analogRead(A1));
-	lcd.setCursor(0,2);
 	lcd.print(analogRead(A3));
-	lcd.setCursor(0,3);
+	lcd.setCursor(16,0);
 	lcd.print(analogRead(A4));
+	lcd.setCursor(16,3);
+	lcd.print(analogRead(A1));
+	lcd.setCursor(0,3);
+	lcd.print(analogRead(A0));
 }
 
 void setup(){
@@ -91,29 +91,23 @@ void setup(){
 	lcd.clear();
 
 	pinMode(A0, INPUT);
-  digitalWrite(A0,HIGH); //pull-up pre !degenerovanie dat 
-  pinMode(A1, INPUT);
-  pinMode(A3, INPUT);
-  pinMode(A4, INPUT);
+    digitalWrite(A0,HIGH); //pull-up pre !degenerovanie dat 
+    pinMode(A1, INPUT);
+    pinMode(A3, INPUT);
+    pinMode(A4, INPUT);
 
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-  digitalWrite(trigPin, LOW);  
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
+    digitalWrite(trigPin, LOW);  
 }
 
 void loop(){
 	showIRreadings();
-	lcd.setCursor(13,0);
+	lcd.setCursor(6,0);
 	lcd.print("cm: ");
 	lcd.print(distance());
-	lcd.setCursor(10,1);
+	lcd.setCursor(5,1);
 	lcd.print("servo: ");
 	lcd.print(head.read());
 	delay(100);
 }
-
-
-
-
-
-
