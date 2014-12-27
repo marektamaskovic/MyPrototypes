@@ -87,7 +87,7 @@ void showReadings(){
 	//servo and SRF05 sensor readings
 	lcd.setCursor(6,0);
 	lcd.print("cm: ");
-	lcd.print(distance());
+	//lcd.print(distance());
 	lcd.setCursor(5,1);
 	lcd.print("servo: ");
 	lcd.print(head.read());
@@ -112,5 +112,9 @@ void setup(){
 
 void loop(){
 	showReadings();
+	//write distance to 11,0 display position
+	try{
+		distance();
+	}
 	delay(100);
 }
