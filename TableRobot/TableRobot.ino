@@ -26,35 +26,43 @@ int distance(){
 	return cm;
 }
 
-void motorControl(int input1,int input2,int enable,int speed){
+void motorControl(int enable,int input2,int input1,int speed){
 	//Single motor controll function
 	if (speed>0) {
 		digitalWrite(input1,HIGH);
 		digitalWrite(input2, LOW);
 	}
-	else {
+	else if (speed<0){
 		digitalWrite(input1, LOW);
 		digitalWrite(input2, HIGH);
 	}
+  else{
+    digitalWrite(input1, LOW);
+    digitalWrite(input2, LOW);
+  }
+
 	analogWrite(enable, abs(speed));
 }
 
-void moveControl(int first, int second, int third, int fourth){
-	motorControl(motor[0][0],motor[0][1],motor[0][2],first);
-	motorControl(motor[1][0],motor[1][1],motor[1][2],second);
-	motorControl(motor[2][0],motor[2][1],motor[2][2],third);
-	motorControl(motor[3][0],motor[3][1],motor[3][2],fourth);
+void moveControl(int left, int right){
+	motorControl(motor[0][0],motor[0][1],motor[0][2],left);
+	motorControl(motor[1][0],motor[1][1],motor[1][2],right);
+	motorControl(motor[2][0],motor[2][1],motor[2][2],left);
+	motorControl(motor[3][0],motor[3][1],motor[3][2],right);
 }
 
 void calibration(){
 	//initialize duration of calibration
 
-	int calibrationTime = 60;
+	int calibrationTime = 20; //20 seconds is calibration time
 	int startTime = millis();
 	int counter;
 
+  Serial.print("Calibration started \n calibrationTime: ");
+  Serial.println(calibrationTime);
+
 	//start spinning
-	motorControl(255,-255,255,-255);
+	moveControl(255,-255);
 
 	while (((millis()-startTime)/1000) < calibrationTime){
 		sensors[0]+=analogRead(A0);
@@ -63,14 +71,19 @@ void calibration(){
 		sensors[3]+=analogRead(A4);
 		++counter;
 	}
+
 	//stop spinning
-	motorControl(0,0,0,0);
+	moveControl(0,0);
 
 	for (int i = 0; i < 3; i++){ 
 		sensors[i]/=counter;
+    Serial.print(i);
+    Serial.print(": ");
+    Serial.println(sensors[i]);
 	}
 
 }
+
 
 void showReadings(){
 	//IR readings
@@ -98,23 +111,26 @@ void setup(){
 	head.write(85);
 	lcd.begin(20,4);
 	lcd.clear();
+  Serial.begin(9600);
 
 	pinMode(A0, INPUT);
-    digitalWrite(A0,HIGH); //pull-up pre !degenerovanie dat 
-    pinMode(A1, INPUT);
-    pinMode(A3, INPUT);
-    pinMode(A4, INPUT);
+  digitalWrite(A0,HIGH); //pull-up pre !degenerovanie dat
+  pinMode(A1, INPUT);
+  pinMode(A3, INPUT);
+  pinMode(A4, INPUT);
 
-    pinMode(trigPin, OUTPUT);
-    pinMode(echoPin, INPUT);
-    digitalWrite(trigPin, LOW);  
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  digitalWrite(trigPin, LOW); 
+   motorControl(motor[0][0],motor[0][1],motor[0][2],255);
 }
 
 void loop(){
 	showReadings();
+
 	//write distance to 11,0 display position
-	try{
-		distance();
-	}
+	// try{
+	// 	distance();
+	// }
 	delay(100);
 }
