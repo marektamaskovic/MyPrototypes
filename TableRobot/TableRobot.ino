@@ -1,30 +1,13 @@
-#include <Servo.h>
-#include <LiquidCrystal.h>
-
-Servo head;
-LiquidCrystal lcd(31,33,35,37,39,41);
-
 const int trigPin = 23;
 const int echoPin = 25;
-int sensors[3];
-int motor[4][3] = {	
+
+int motor[3][2] = {	
 					{5 , 2, 4},
 					{3 , 0, 1},
 					{9 , 8, 11},
 					{10, 6, 7}
 				};
 
-
-
-int distance(){
-	long duration, cm;
-	digitalWrite(trigPin, HIGH);
-	delayMicroseconds(10);
-	digitalWrite(trigPin, LOW);
-	duration = pulseIn(echoPin, HIGH);
-	cm = duration/29/2;
-	return cm;
-}
 
 void motorControl(int enable,int input2,int input1,int speed){
 	//Single motor controll function
@@ -109,8 +92,8 @@ void showReadings(){
 void setup(){
 	head.attach(A2);
 	head.write(85);
-	lcd.begin(20,4);
-	lcd.clear();
+	//lcd.begin(20,4);
+	//lcd.clear();
   Serial.begin(9600);
 
 	pinMode(A0, INPUT);
@@ -119,18 +102,25 @@ void setup(){
   pinMode(A3, INPUT);
   pinMode(A4, INPUT);
 
+  for (int i = 0;i<11;i++){
+  	pinMode(i, OUTPUT);
+  	digitalWrite(i, LOW);
+  }
+
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
   digitalWrite(trigPin, LOW); 
-   motorControl(motor[0][0],motor[0][1],motor[0][2],255);
+   //motorControl(motor[0][0],motor[0][1],motor[0][2],255);
+   moveControl(255,255);
 }
 
 void loop(){
-	showReadings();
+	//showReadings();
 
 	//write distance to 11,0 display position
 	// try{
 	// 	distance();
 	// }
+	moveControl(255,255);
 	delay(100);
 }
