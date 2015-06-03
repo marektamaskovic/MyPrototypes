@@ -102,36 +102,36 @@ void calibration(){
 }
 
 void measure(){
-	//prvy
-	if ((analogread(A0)<sensors[0].maximum) and ( analogread(A0)>sensors[0].minimum)){
+	//first
+	if ((analogread(A0)<=sensors[0].maximum) and ( analogread(A0)>=sensors[0].minimum)){
 		sensors[0].avl = true;
 	}
 	else{
 		sensors[0].avl = false;
 	}
 
-	//druhy
-	if ((analogread(A1)<sensors[1].maximum) and ( analogread(A0)>sensors[1].minimum)){
+	//second
+	if ((analogread(A1)<=sensors[1].maximum) and ( analogread(A1)>=sensors[1].minimum)){
 		sensors[1].avl = true;
 	}
 	else{
 		sensors[1].avl = false;
 	}
 
-	//treti
-	if ((analogread(A3)<sensors[3].maximum) and ( analogread(A0)>sensors[3].minimum)){
+	//third
+	if ((analogread(A3)<=sensors[2].maximum) and ( analogread(A3)>=sensors[2].minimum)){
+		sensors[2].avl = true;
+	}
+	else{
+		sensors[2].avl = false;
+	}
+
+	//fourth
+	if ((analogread(A4)<=sensors[3].maximum) and ( analogread(A4)>=sensors[3].minimum)){
 		sensors[3].avl = true;
 	}
 	else{
 		sensors[3].avl = false;
-	}
-
-	//stvrti
-	if ((analogread(A4)<sensors[4].maximum) and ( analogread(A0)>sensors[4].minimum)){
-		sensors[4].avl = true;
-	}
-	else{
-		sensors[4].avl = false;
 	}
 
 }
@@ -170,11 +170,11 @@ int distance(){
   	delayMicroseconds(10);
   	digitalWrite(trigPin, LOW);
 
-  	duration = pulseIn(echoPin, HIGH,2000); // 2000 je 45cm
+  	duration = pulseIn(echoPin, HIGH,2000); // 2000 is 45cm
 
   	return duration/29/2;
 
-	//2000 je <0 <-> 35 40>cm
+	//2000 is <0 <-> 35 / 40>cm
 
 }
 
@@ -187,7 +187,7 @@ void setup(){
 	Serial.begin(9600);
 
   	pinMode(A0, INPUT);
-  	digitalWrite(A0,HIGH); //pull-up pre !degenerovanie dat
+  	digitalWrite(A0,HIGH); //pull-up for nondegenerating data
   	pinMode(A1, INPUT);
   	pinMode(A3, INPUT);
   	pinMode(A4, INPUT);
@@ -200,7 +200,6 @@ void setup(){
   	pinMode(trigPin, OUTPUT);
   	pinMode(echoPin, INPUT);
   	digitalWrite(trigPin, LOW); 
-   	//motorControl(motor[0][0],motor[0][1],motor[0][2],255);
   	moveControl(255,255);
 }
 
@@ -208,7 +207,50 @@ void loop(){
 	showReadings();
 
 	measure();
+	long dist = distance();
 
-	moveControl(125,-125);
-	delay(100);
+	//logic
+	// if is everything ok and distance is in good shape then go straight
+	while (sensors[0].avl && sensors[1].avl && ((dist >= 30) || (dist == 0)) ) {
+		moveControl(255,255);
+	}
+
+	//front left side is not on table
+	while (!sensors[0].avl && sensors[1].avl && sensors[4].avl) {
+
+		head.write(180);
+		dist = distance();
+
+		if ((dist>=35) || (dist == 0))
+		moveControl(-255,255);
+
+		if(sensors[0].avl){
+			head.write(97);   
+		}
+	}
+
+	//front left side is not on table
+	while (sensors[0].avl && !sensors[1].avl && sensors[3].avl) {
+		
+		head.write(30);
+		dist = distance();
+
+		if ((dist>=35) || (dist == 0))
+		moveControl(255,-255);
+
+		if(sensors[0].avl){
+			head.write(97);   
+		}
+	}
+
+	//front side is not on table and we need to go backwards
+
+	while (!sensors[0].avl && !sensors[1].avl && sensors[2].avl && sensors[3].avl){
+		motorControl(-255,-255);
+	}
+
+	if !(sensors[0].avl && sensors[1].avl && sensors[2].avl && sensors[3].avl) {
+		lcd.setCursor(4,3);
+		lcd.print("ERROR")
+	}
 }
