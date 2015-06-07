@@ -22,6 +22,7 @@ int motor [4][3] = {
 				};
 
 int sensors[4];
+bool flag;
 
 
 void motorControl(int enable,int input2,int input1,int speed){
@@ -51,12 +52,18 @@ void moveControl(int left, int right){
 
 void calibration(){
 	//initialize duration of calibration
-
-	int calibrationTime = 35; //20 seconds is calibration time
+	randomSeed(analogRead(A8););
+	int calibrationTime = random(10, 26);; //20 seconds is calibration time
 	int startTime = millis();
 
   	Serial.print("Calibration started \n calibrationTime: ");
   	Serial.println(calibrationTime);
+
+  	//initialize sensors variable
+  	for (int i = 0; i<4; i++){
+		sensors[i].min = 1023;
+		sensors[i].max = 0;
+	}
 
 	//start spinning
 	moveControl(150,-150);
@@ -103,7 +110,7 @@ void calibration(){
 
 void measure(){
 	//first
-	if ((analogread(A0)<=sensors[0].maximum) and ( analogread(A0)>=sensors[0].minimum)){
+	if ((analogread(A0)<=sensors[0].maximum) && ( analogread(A0)>=sensors[0].minimum)){
 		sensors[0].avl = true;
 	}
 	else{
@@ -111,7 +118,7 @@ void measure(){
 	}
 
 	//second
-	if ((analogread(A1)<=sensors[1].maximum) and ( analogread(A1)>=sensors[1].minimum)){
+	if ((analogread(A1)<=sensors[1].maximum) && ( analogread(A1)>=sensors[1].minimum)){
 		sensors[1].avl = true;
 	}
 	else{
@@ -119,7 +126,7 @@ void measure(){
 	}
 
 	//third
-	if ((analogread(A3)<=sensors[2].maximum) and ( analogread(A3)>=sensors[2].minimum)){
+	if ((analogread(A3)<=sensors[2].maximum) && ( analogread(A3)>=sensors[2].minimum)){
 		sensors[2].avl = true;
 	}
 	else{
@@ -127,7 +134,7 @@ void measure(){
 	}
 
 	//fourth
-	if ((analogread(A4)<=sensors[3].maximum) and ( analogread(A4)>=sensors[3].minimum)){
+	if ((analogread(A4)<=sensors[3].maximum) && ( analogread(A4)>=sensors[3].minimum)){
 		sensors[3].avl = true;
 	}
 	else{
@@ -200,10 +207,21 @@ void setup(){
   	pinMode(trigPin, OUTPUT);
   	pinMode(echoPin, INPUT);
   	digitalWrite(trigPin, LOW); 
-  	moveControl(255,255);
+
+  	//calibration
+  	calibration();
 }
 
 void loop(){
+
+	
+	// recalibration
+	if (caliButton){
+		calibration();
+	}
+
+	Serial.print(millis());
+
 	showReadings();
 
 	measure();
@@ -211,12 +229,12 @@ void loop(){
 
 	//logic
 	// if is everything ok and distance is in good shape then go straight
-	while (sensors[0].avl && sensors[1].avl && ((dist >= 30) || (dist == 0)) ) {
+	if (sensors[0].avl && sensors[1].avl && ((dist >= 30) || (dist == 0)) ) {
 		moveControl(255,255);
 	}
 
 	//front left side is not on table
-	while (!sensors[0].avl && sensors[1].avl && sensors[4].avl) {
+	if (!sensors[0].avl && sensors[1].avl && sensors[4].avl) {
 
 		head.write(180);
 		dist = distance();
@@ -230,7 +248,7 @@ void loop(){
 	}
 
 	//front left side is not on table
-	while (sensors[0].avl && !sensors[1].avl && sensors[3].avl) {
+	if (sensors[0].avl && !sensors[1].avl && sensors[3].avl) {
 		
 		head.write(30);
 		dist = distance();
@@ -246,11 +264,33 @@ void loop(){
 	//front side is not on table and we need to go backwards
 
 	while (!sensors[0].avl && !sensors[1].avl && sensors[2].avl && sensors[3].avl){
-		motorControl(-255,-255);
+		motorControl(-150,-150);
+		delay(100);
+		measure();
+		if (sensors[0].avl && sensors[1].avl) flag = true;
 	}
 
+	// after reverse spin 
+	if (flag) {
+		randomSeed(analogRead(A8));
+		long randNum = random(0, 2);
+		if (randNum == 0) {
+			motorControl(-255,255);
+		}
+		else {
+			motorControl(255,-255);
+		}
+		flag = false;
+		delay(750);
+	}
+
+	// error because vehicle is not on table or recalibrate!
 	if !(sensors[0].avl && sensors[1].avl && sensors[2].avl && sensors[3].avl) {
 		lcd.setCursor(4,3);
-		lcd.print("ERROR")
+		lcd.print("ERROR");
 	}
+
+
+	Serial.print(" - ");
+	Serial.println(millis());
 }
